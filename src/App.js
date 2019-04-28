@@ -1,26 +1,37 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import Listado from './Listado';
+
+class App extends React.Component {
+	state = {
+		data: null
+	};
+	loadMovies = () => {
+		fetch('https://yts.am/api/v2/list_movies.json')
+			.then(response => response.json())
+			.then(responseJson => {
+				this.setState({ data: responseJson.data.movies });
+			})
+			.catch(error => {
+				console.error(error);
+			});
+	};
+	render() {
+		return (
+			<div className="App">
+				<header className="App-header">
+					<h3>Hola mundo</h3>
+					<button onClick={this.loadMovies}>Cargar Películas</button>
+					{this.state.data ? (
+						<Listado data={this.state.data} />
+					) : (
+						<p>Haga click para cargar las peliculas</p>
+					)}
+				</header>
+			</div>
+		);
+	}
 }
 
 export default App;
