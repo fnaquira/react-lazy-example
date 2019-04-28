@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import './App.css';
 
-import Listado from './Listado';
+//import Listado from './Listado';
+const Listado = lazy(() => import('./Listado'));
 
 class App extends React.Component {
 	state = {
 		data: null
 	};
 	loadMovies = () => {
+		this.setState({ data: [] });
 		fetch('https://yts.am/api/v2/list_movies.json')
 			.then(response => response.json())
 			.then(responseJson => {
@@ -24,7 +26,9 @@ class App extends React.Component {
 					<h3>Hola mundo</h3>
 					<button onClick={this.loadMovies}>Cargar Películas</button>
 					{this.state.data ? (
-						<Listado data={this.state.data} />
+						<Suspense fallback={<p>Cargando...</p>}>
+							<Listado data={this.state.data} />
+						</Suspense>
 					) : (
 						<p>Haga click para cargar las peliculas</p>
 					)}
