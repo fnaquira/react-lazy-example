@@ -43,7 +43,7 @@ export default App;
 
 El problema es que aunque no se haya cargado el componente, nuestro archivo minificado ya lo tiene incluido. Esto puede incrementar en mucho el peso de nuestros archivos Javascript cuando al inicio del uso del sistema el usuario solamente está utilizando lo necesario.
 Por ejemplo, ahora mi consola de red luce así:
-![https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/react-sin-lazy.PNG](url)
+![React Sin Lazy](https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/react-sin-lazy.PNG)
 Lo ideal sería que conforme vaya cargando las demás vistas y características de nuestra aplicación, se vayan cargando esos componentes al navegador, mejorando así la experiencia de una buena carga inicial.
 Para esto, haremos unas modificaciones al código.
 Primero, importaremos **lazy** y **Suspense** de React.
@@ -72,7 +72,7 @@ Finalmente, modificaremos en el método render la invocación de nuestro compone
 ```
 
 Veamos ahora como se comporta nuestra consola cuando hacemos click en cargar:
-![https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/platzi-react-lazy](url)
+![React con Lazy Loading](https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/platzi-react-lazy.gif)
 Solamente cuando se hace la petición, se carga asíncronamente el archivo **2.chunk.js**. Este es un truco muy bueno para no cargar desde el inicio por ejemplo, nuestro componente de la vista de perfil, o componentes pesados como estadísticas o cualquier cosa que se nos ocurra que no ve necesariamente el usuario desde el inicio.
 Les dejo el repositorio del ejemplo aquí:
 [https://github.com/fnaquira/react-lazy-example](url)
