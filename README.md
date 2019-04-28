@@ -1,68 +1,79 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Creo que después de ver el curso de React, puedo compartir algo adicional, sobre todo para los que crean aplicaciones grandes que tiene muchas rutas y componentes.
+React implementa una opción de cargado en partes, o "chunks". Esto lo podemos aprovechar mediante su función lazy. Les mostraré primero un componente de ejemplo, que simplemente llama a una URL para obtener películas y luego listarlas.
 
-## Available Scripts
+```
+import React from 'react';
+import './App.css';
 
-In the project directory, you can run:
+import Listado from './Listado';
 
-### `npm start`
+class App extends React.Component {
+	state = {
+		data: null
+	};
+	loadMovies = () => {
+		fetch('https://yts.am/api/v2/list_movies.json')
+			.then(response => response.json())
+			.then(responseJson => {
+				this.setState({ data: responseJson.data.movies });
+			})
+			.catch(error => {
+				console.error(error);
+			});
+	};
+	render() {
+		return (
+			<div className="App">
+				<header className="App-header">
+					<h3>Hola mundo</h3>
+					<button onClick={this.loadMovies}>Cargar Películas</button>
+					{this.state.data ? (
+						<Listado data={this.state.data} />
+					) : (
+						<p>Haga click para cargar las peliculas</p>
+					)}
+				</header>
+			</div>
+		);
+	}
+}
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+export default App;
+```
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+El problema es que aunque no se haya cargado el componente, nuestro archivo minificado ya lo tiene incluido. Esto puede incrementar en mucho el peso de nuestros archivos Javascript cuando al inicio del uso del sistema el usuario solamente está utilizando lo necesario.
+Por ejemplo, ahora mi consola de red luce así:
+![https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/react-sin-lazy.PNG](url)
+Lo ideal sería que conforme vaya cargando las demás vistas y características de nuestra aplicación, se vayan cargando esos componentes al navegador, mejorando así la experiencia de una buena carga inicial.
+Para esto, haremos unas modificaciones al código.
+Primero, importaremos **lazy** y **Suspense** de React.
 
-### `npm test`
+```
+import React, { lazy, Suspense } from 'react';
+```
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Segundo, modificamos la importación del componente Listado, que ahora será realizada a través de lazy
 
-### `npm run build`
+```
+//import Listado from './Listado';
+const Listado = lazy(() => import('./Listado'));
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Finalmente, modificaremos en el método render la invocación de nuestro componente, envolviéndolo en **Suspense** al mismo tiempo que le pasamos el parámetro fallback (el componente que renderizará mientras carga el nuestro)
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+```
+{this.state.data ? (
+						<Suspense fallback={<p>Cargando...</p>}>
+							<Listado data={this.state.data} />
+						</Suspense>
+					) : (
+						<p>Haga click para cargar las peliculas</p>
+					)}
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+Veamos ahora como se comporta nuestra consola cuando hacemos click en cargar:
+![https://raw.githubusercontent.com/fnaquira/react-lazy-example/master/platzi-react-lazy](url)
+Solamente cuando se hace la petición, se carga asíncronamente el archivo **2.chunk.js**. Este es un truco muy bueno para no cargar desde el inicio por ejemplo, nuestro componente de la vista de perfil, o componentes pesados como estadísticas o cualquier cosa que se nos ocurra que no ve necesariamente el usuario desde el inicio.
+Les dejo el repositorio del ejemplo aquí:
+[https://github.com/fnaquira/react-lazy-example](url)
+Espero les ayude, como me ayudó a mi el nuevo curso de React de este año.
